@@ -82,6 +82,7 @@ module Autoupdate
       script.include?("/usr/bin/open -g") ? "yes (legacy)" : "no"
     end
     details << "Notifications: #{notification_mode}"
+    details << "Debug logging: yes" if script.include?(" --debug")
     details << "Logs: #{plist["StandardOutPath"]}" if plist["StandardOutPath"]
 
     details.join("\n")
@@ -102,7 +103,7 @@ module Autoupdate
       line.include?("#{Autoupdate::Core.brew} upgrade -v")
     end
     if selected_upgrade
-      packages = selected_upgrade.split(/\s+upgrade\s+-v(?:\s+--greedy)?\s+/, 2).last&.strip
+      packages = selected_upgrade.split(/\s+upgrade\s+-v(?:\s+--greedy)?(?:\s+--debug)?\s+/, 2).last&.strip
       packages = packages&.split(" && ", 2)&.first
       return "selected packages (#{packages})" if packages.present?
     end
