@@ -84,6 +84,18 @@ day, rather than a relative interval measured from whenever the command was
 run (which drifts and won't line up with midnight, or any other fixed time,
 over repeated runs).
 
+### Troubleshooting with maximum verbosity
+
+```sh
+brew autoupdate start 12h --upgrade --cleanup --debug-logs
+```
+
+`--debug-logs` runs every scheduled `brew` command (`update`, `upgrade`,
+`cleanup`) with `-v --debug`. Homebrew's own verbosity flags are booleans
+rather than stacking levels (there's no `-vvv`), so this is the most verbose
+brew itself can get; the extra output is written to the same log file as a
+normal run.
+
 ## Usage
 
 <!-- HELP-COMMAND-OUTPUT:START -->
@@ -116,12 +128,14 @@ Common start options:
   --ac-only skips runs while the Mac is on battery power.
   --notify-on-error shows notifications only for failed runs.
   --no-notify disables notifications.
+  --debug-logs runs every scheduled brew command at maximum verbosity.
 
 Examples:
   brew autoupdate start
   brew autoupdate start 12h --upgrade --cleanup --immediate
   brew autoupdate start 1d --upgrade --only=wget,node,firefox
   brew autoupdate start 00:00 --upgrade --cleanup
+  brew autoupdate start 12h --upgrade --cleanup --debug-logs
   brew autoupdate logs --lines=50
   brew autoupdate logs --follow
 
@@ -175,6 +189,9 @@ time such as 00:00 to run daily at that specific time.
                                    power.
       --notify-on-error            Notify only when an autoupdate run fails.
       --no-notify                  Disable autoupdate notifications.
+      --debug-logs                 Run every scheduled brew command at its
+                                   maximum verbosity (-v --debug) for
+                                   troubleshooting scheduled runs.
 
 From tap: domt4/autoupdate
 Usage: brew autoupdate logs [options]:

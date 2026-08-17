@@ -38,6 +38,7 @@ class CommandTest < Minitest::Test
     assert_includes stdout, "--cleanup"
     assert_includes stdout, "--notify-on-error"
     assert_includes stdout, "--no-notify"
+    assert_includes stdout, "--debug-logs"
     refute_includes stdout, "--follow"
     refute_includes stdout, "--lines"
   end

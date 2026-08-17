@@ -33,12 +33,14 @@ module Homebrew
             `--ac-only` skips runs while the Mac is on battery power.
             `--notify-on-error` shows notifications only for failed runs.
             `--no-notify` disables notifications.
+            `--debug-logs` runs every scheduled `brew` command at maximum verbosity.
 
           Examples:
             `brew autoupdate start`
             `brew autoupdate start 12h --upgrade --cleanup --immediate`
             `brew autoupdate start 1d --upgrade --only=wget,node,firefox`
             `brew autoupdate start 00:00 --upgrade --cleanup`
+            `brew autoupdate start 12h --upgrade --cleanup --debug-logs`
             `brew autoupdate logs --lines=50`
             `brew autoupdate logs --follow`
 
@@ -85,6 +87,9 @@ module Homebrew
                  description: "Notify only when an autoupdate run fails."
           switch "--no-notify",
                  description: "Disable autoupdate notifications."
+          switch "--debug-logs",
+                 description: "Run every scheduled `brew` command at its maximum verbosity " \
+                              "(`-v --debug`) for troubleshooting scheduled runs."
 
           conflicts "--only", "--leaves-only"
           conflicts "--notify-on-error", "--no-notify"
