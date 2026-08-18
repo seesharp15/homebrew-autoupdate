@@ -32,7 +32,15 @@ module Autoupdate
       end
     end
 
-    auto_args = "update"
+    # Homebrew's own -v/--verbose and -d/--debug are booleans, not stacking
+    # levels (there's no `-vvv`), so the most verbose brew can get is both
+    # flags together, applied to every scheduled brew invocation. The upgrade
+    # commands below already hardcode `-v`, so they only need `--debug` added;
+    # `update` and `cleanup` need both.
+    debug_flag = args.debug_logs? ? " --debug" : ""
+    verbose_debug_flag = args.debug_logs? ? " -v --debug" : ""
+
+    auto_args = "update#{verbose_debug_flag}"
     # Spacing at start of lines is deliberate. Don't undo.
     if args.upgrade?
       if args.leaves_only?
@@ -44,7 +52,7 @@ module Autoupdate
           LEAVES=$(#{Autoupdate::Core.brew} leaves)
           if [ -n "$LEAVES" ]; then
             echo "Upgrading leaves packages only..."
-            #{Autoupdate::Core.brew} upgrade --no-ask --formula -v $(echo "$LEAVES") || {
+            #{Autoupdate::Core.brew} upgrade --no-ask --formula -v#{debug_flag} $(echo "$LEAVES") || {
               echo "Warning: Some leaves packages failed to upgrade."
               # Return 0 to ensure the autoupdate process continues
               exit 0
@@ -68,9 +76,9 @@ module Autoupdate
       elsif args.only
         greedy = args.greedy? ? " --greedy" : ""
         package_list = args.only.join(" ")
-        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask -v#{greedy} #{package_list}"
+        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask -v#{greedy}#{debug_flag} #{package_list}"
       else
-        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask --formula -v"
+        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask --formula -v#{debug_flag}"
       end
 
       if !args.only && (HOMEBREW_PREFIX/"Caskroom").exist?
@@ -84,11 +92,11 @@ module Autoupdate
         end
 
         greedy = args.greedy? ? " --greedy" : ""
-        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask --cask -v#{greedy}"
+        auto_args << " && #{Autoupdate::Core.brew} upgrade --no-ask --cask -v#{greedy}#{debug_flag}"
       end
 
     end
-    auto_args << " && #{Autoupdate::Core.brew} cleanup" if args.cleanup?
+    auto_args << " && #{Autoupdate::Core.brew} cleanup#{verbose_debug_flag}" if args.cleanup?
 
     # Try to respect user choice as much as possible.
     env_cache = ENV.fetch("HOMEBREW_CACHE") if ENV["HOMEBREW_CACHE"]
@@ -103,6 +111,12 @@ module Autoupdate
     # from source, especially since it'll be non-obvious why the CPU is
     # suddenly being worked hard.
     set_env = "export HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK=1"
+
+    # -v/--debug are booleans with no deeper level to stack (there's no
+    # `-vvv`), but HOMEBREW_CURL_VERBOSE goes a layer deeper than either:
+    # it makes every download's underlying curl(1) call print full HTTP
+    # request/response tracing, which brew's own flags don't surface.
+    set_env << "\nexport HOMEBREW_CURL_VERBOSE=1" if args.debug_logs?
 
     set_env << "\n#{shell_export("PATH", env_path)}"
     set_env << "\n#{shell_export("HOMEBREW_CACHE", env_cache)}" if env_cache

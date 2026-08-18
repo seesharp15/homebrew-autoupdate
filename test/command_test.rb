@@ -38,6 +38,7 @@ class CommandTest < Minitest::Test
     assert_includes stdout, "--cleanup"
     assert_includes stdout, "--notify-on-error"
     assert_includes stdout, "--no-notify"
+    assert_includes stdout, "--debug-logs"
     refute_includes stdout, "--follow"
     refute_includes stdout, "--lines"
   end
@@ -131,6 +132,13 @@ class CommandTest < Minitest::Test
     upgrade_lines.each do |line|
       assert_includes line, "upgrade --no-ask"
     end
+  end
+
+  def test_debug_logs_sets_curl_verbose_for_deeper_download_tracing
+    source = File.read(File.join(ROOT, "lib/autoupdate/start.rb"))
+
+    assert_includes source, "HOMEBREW_CURL_VERBOSE=1"
+    assert_match(/HOMEBREW_CURL_VERBOSE=1["']? if args\.debug_logs\?/, source)
   end
 
   private
