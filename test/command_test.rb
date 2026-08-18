@@ -134,6 +134,13 @@ class CommandTest < Minitest::Test
     end
   end
 
+  def test_debug_logs_sets_curl_verbose_for_deeper_download_tracing
+    source = File.read(File.join(ROOT, "lib/autoupdate/start.rb"))
+
+    assert_includes source, "HOMEBREW_CURL_VERBOSE=1"
+    assert_match(/HOMEBREW_CURL_VERBOSE=1["']? if args\.debug_logs\?/, source)
+  end
+
   private
 
   def brew_autoupdate(*arguments)

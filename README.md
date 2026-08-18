@@ -92,9 +92,11 @@ brew autoupdate start 12h --upgrade --cleanup --debug-logs
 
 `--debug-logs` runs every scheduled `brew` command (`update`, `upgrade`,
 `cleanup`) with `-v --debug`. Homebrew's own verbosity flags are booleans
-rather than stacking levels (there's no `-vvv`), so this is the most verbose
-brew itself can get; the extra output is written to the same log file as a
-normal run.
+rather than stacking levels (there's no `-vvv`), so that's as verbose as
+brew's command-line flags get. For one layer deeper, `--debug-logs` also sets
+`HOMEBREW_CURL_VERBOSE=1`, which makes every download's underlying `curl`(1)
+call print full HTTP request/response tracing — detail brew's own flags don't
+surface. All of it is written to the same log file as a normal run.
 
 ## Usage
 
@@ -190,8 +192,9 @@ time such as 00:00 to run daily at that specific time.
       --notify-on-error            Notify only when an autoupdate run fails.
       --no-notify                  Disable autoupdate notifications.
       --debug-logs                 Run every scheduled brew command at its
-                                   maximum verbosity (-v --debug) for
-                                   troubleshooting scheduled runs.
+                                   maximum verbosity (-v --debug, plus
+                                   HOMEBREW_CURL_VERBOSE for full download
+tracing) for troubleshooting scheduled runs.
 
 From tap: domt4/autoupdate
 Usage: brew autoupdate logs [options]:

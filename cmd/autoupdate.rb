@@ -89,7 +89,8 @@ module Homebrew
                  description: "Disable autoupdate notifications."
           switch "--debug-logs",
                  description: "Run every scheduled `brew` command at its maximum verbosity " \
-                              "(`-v --debug`) for troubleshooting scheduled runs."
+                              "(`-v --debug`, plus `HOMEBREW_CURL_VERBOSE` for full download " \
+                              "tracing) for troubleshooting scheduled runs."
 
           conflicts "--only", "--leaves-only"
           conflicts "--notify-on-error", "--no-notify"
