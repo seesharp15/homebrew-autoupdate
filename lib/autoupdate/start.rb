@@ -112,6 +112,12 @@ module Autoupdate
     # suddenly being worked hard.
     set_env = "export HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK=1"
 
+    # -v/--debug are booleans with no deeper level to stack (there's no
+    # `-vvv`), but HOMEBREW_CURL_VERBOSE goes a layer deeper than either:
+    # it makes every download's underlying curl(1) call print full HTTP
+    # request/response tracing, which brew's own flags don't surface.
+    set_env << "\nexport HOMEBREW_CURL_VERBOSE=1" if args.debug_logs?
+
     set_env << "\n#{shell_export("PATH", env_path)}"
     set_env << "\n#{shell_export("HOMEBREW_CACHE", env_cache)}" if env_cache
     set_env << "\n#{shell_export("HOMEBREW_LOGS", env_logs)}" if env_logs
