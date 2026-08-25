@@ -180,12 +180,38 @@ module Autoupdate
       #{ac_only.chomp}
       #{set_env}
       run_log=$(/usr/bin/mktemp "${TMPDIR:-/tmp}/brew-autoupdate.XXXXXX") || exit 1
-      trap '/bin/rm -f "$run_log"' EXIT
+      run_status=$(/usr/bin/mktemp "${TMPDIR:-/tmp}/brew-autoupdate-status.XXXXXX") || exit 1
+      trap '/bin/rm -f "$run_log" "$run_status"' EXIT
 
-      /bin/date
-      (#{Autoupdate::Core.brew} #{auto_args}) >"$run_log" 2>&1
-      status=$?
-      /bin/cat "$run_log"
+      # Prefix every line with the time it was read. /bin/sh here is bash 3.2,
+      # which predates printf's %(fmt)T, and macOS awk has no strftime(), so
+      # perl does the stamping when it is present and a read loop shelling out
+      # to date covers the case where it is not.
+      stamp() {
+        if [ -x /usr/bin/perl ]
+        then
+          /usr/bin/perl -MPOSIX -pe 'BEGIN { $| = 1 } $_ = POSIX::strftime("[%Y-%m-%d %H:%M:%S%z] ", localtime) . $_'
+        else
+          while IFS= read -r line || [ -n "$line" ]
+          do
+            printf '[%s] %s\\n' "$(/bin/date '+%Y-%m-%d %H:%M:%S%z')" "$line"
+          done
+        fi
+      }
+
+      echo "==> homebrew-autoupdate starting" | stamp
+
+      # The notifier reads "$run_log" and matches brew's own output, so tee
+      # keeps an unstamped copy for it and only stdout (the launchd log) gets
+      # the timestamps. A pipeline hides brew's exit status from $?, so it goes
+      # through a file rather than relying on bash's PIPESTATUS.
+      {
+        (#{Autoupdate::Core.brew} #{auto_args}) 2>&1
+        echo $? >"$run_status"
+      } | /usr/bin/tee "$run_log" | stamp
+
+      status=$(/bin/cat "$run_status" 2>/dev/null)
+      [ -n "$status" ] || status=1
       #{Autoupdate::Notify.command(mode: notify_mode)}
       exit "$status"
     EOS
