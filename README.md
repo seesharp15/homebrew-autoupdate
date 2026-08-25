@@ -212,6 +212,20 @@ Usage: brew autoupdate logs [options]:
 
 **Logs of the performed operations can be found at:** `~/Library/Logs/com.github.domt4.homebrew-autoupdate`
 
+Every line is prefixed with the local date and time it was written, so a log
+covering many runs stays readable:
+
+```
+[2026-08-20 00:00:01-0400] ==> homebrew-autoupdate starting
+[2026-08-20 00:00:03-0400] ==> Updating Homebrew...
+[2026-08-20 00:00:12-0400] ==> Upgrading 3 outdated packages:
+```
+
+The `==> homebrew-autoupdate starting` line marks the beginning of each
+scheduled run. Timestamps are applied as brew produces output rather than
+when the run finishes, so they show how long individual steps actually took.
+Desktop notifications are unaffected and stay free of the prefix.
+
 ## This vs `brew`'s built-in autoupdate mechanism
 
 This command mostly exists to ensure Homebrew is updated regardless of whether
